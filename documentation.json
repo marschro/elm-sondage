@@ -1,0 +1,71 @@
+[
+  {
+    "name": "Sondage",
+    "comment": "\nThis package provides an easy and simple way to create questionaires.\nWhat does this package help you with?\n\n# Make Sondage part of your Model\n@docs Question\n\n# Build the catalogue out of your questions\n@docs Catalogue, Msg, initCatalogue, update, view\n",
+    "aliases": [],
+    "types": [
+      {
+        "name": "Catalogue",
+        "comment": "\n    The Catalogue Type\n",
+        "args": [],
+        "cases": [
+          [
+            "Catalogue",
+            [
+              "{ previous : List Sondage.Question , current : Sondage.Question , remaining : List Sondage.Question }"
+            ]
+          ]
+        ]
+      },
+      {
+        "name": "Msg",
+        "comment": "\n    Msg Type\n",
+        "args": [],
+        "cases": []
+      },
+      {
+        "name": "Question",
+        "comment": "\n    Documentation for Question Type\n",
+        "args": [],
+        "cases": [
+          [
+            "Options",
+            [
+              "{ question : String , options : List String , answer : Maybe.Maybe String }"
+            ]
+          ],
+          [
+            "FreeText",
+            [
+              "{ question : String, answer : Maybe.Maybe String }"
+            ]
+          ],
+          [
+            "Scale",
+            [
+              "{ question : String , range : ( Int, Int ) , answer : Maybe.Maybe String }"
+            ]
+          ]
+        ]
+      }
+    ],
+    "values": [
+      {
+        "name": "initCatalogue",
+        "comment": "\n    Having defined your questions and answers, you have to initialise\n    the List of Question as a Catalogue\n",
+        "type": "List Sondage.Question -> Sondage.Catalogue"
+      },
+      {
+        "name": "update",
+        "comment": "\n    Update handles everything for you\n",
+        "type": "Sondage.Msg -> Sondage.Catalogue"
+      },
+      {
+        "name": "view",
+        "comment": "\n    The view handles all the displying... thingy...\n",
+        "type": "Sondage.Catalogue -> Html.Html Sondage.Msg"
+      }
+    ],
+    "generated-with-elm-version": "0.18.0"
+  }
+]
