@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "Elm Sondage - a convenient package to create questionaires",
+    "summary": "Elm Sondage - a convenient package to create questionnaires",
     "repository": "https://github.com/marschro/elm-sondage.git",
     "license": "BSD3",
     "source-directories": [

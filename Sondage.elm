@@ -6,33 +6,34 @@
 
 module Sondage
     exposing
-        ( Catalogue(Catalogue)
-        , Question(Options, FreeText, Scale)
+        ( Catalogue
         , Msg
+        , Question
+            ( Options
+            , FreeText
+            , Scale
+            , TextBlock
+            )
         , initCatalogue
+        , isCatalogueCompleted
+        , resolveCatalogueAsJson
         , update
         , view
         )
 
 {-|
-This package provides an easy and simple way to create questionaires.
-What does this package help you with?
+# Sondage
 
-# Make Sondage part of your Model
-@docs Question
-
-# Build the catalogue out of your questions
-@docs Catalogue, Msg, initCatalogue, update, view
+@docs Catalogue, Msg, Question, initCatalogue, update, view, isCatalogueCompleted, resolveCatalogueAsJson
 -}
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Encode as JE
 
 
-{-|
-    Documentation for Question Type
--}
+{-| -}
 type Question
     = Options
         { question : String
@@ -48,32 +49,31 @@ type Question
         , range : ( Int, Int )
         , answer : Maybe String
         }
+    | TextBlock
+        { heading : String
+        , text : String
+        }
 
 
-{-|
-    The Catalogue Type
-
--}
+{-| -}
 type Catalogue
     = Catalogue
         { previous : List Question
         , current : Question
         , remaining : List Question
+        , completed : Bool
         }
 
 
-{-|
-    Msg Type
--}
+{-| -}
 type Msg
     = Forwards Catalogue
     | Backwards Catalogue
     | Answer Catalogue String
+    | Finish Catalogue
 
 
-{-|
-    Update handles everything for you
--}
+{-| -}
 update : Msg -> Catalogue
 update msg =
     case msg of
@@ -86,11 +86,27 @@ update msg =
         Answer catalogue answer ->
             updateCatalogueWithAnswer catalogue answer
 
+        Finish catalogue ->
+            completeCatalogue catalogue
 
-{-|
-    Having defined your questions and answers, you have to initialise
-    the List of Question as a Catalogue
--}
+
+completeCatalogue : Catalogue -> Catalogue
+completeCatalogue (Catalogue { previous, current, remaining, completed }) =
+    Catalogue
+        { previous = previous
+        , current = current
+        , remaining = remaining
+        , completed = True
+        }
+
+
+{-| -}
+isCatalogueCompleted : Catalogue -> Bool
+isCatalogueCompleted (Catalogue { previous, current, remaining, completed }) =
+    completed
+
+
+{-| -}
 initCatalogue : List Question -> Catalogue
 initCatalogue questions =
     let
@@ -111,6 +127,7 @@ initCatalogue questions =
             { previous = []
             , current = first
             , remaining = rest
+            , completed = False
             }
 
 
@@ -127,12 +144,61 @@ updateCatalogueWithAnswer (Catalogue { previous, current, remaining }) answer =
 
                 Scale record ->
                     Scale { record | answer = Just answer }
+
+                TextBlock record ->
+                    TextBlock record
     in
         Catalogue
             { previous = previous
             , current = updated
             , remaining = remaining
+            , completed = False
             }
+
+
+{-| -}
+resolveCatalogueAsJson : Catalogue -> JE.Value
+resolveCatalogueAsJson (Catalogue { previous, current, remaining }) =
+    encodeListToJson (List.append previous (current :: remaining))
+
+
+encodeListToJson : List Question -> JE.Value
+encodeListToJson list =
+    List.filterMap
+        (\question ->
+            case question of
+                TextBlock record ->
+                    Nothing
+
+                Options record ->
+                    Just
+                        (JE.object
+                            [ ( "type", JE.string "Options" )
+                            , ( "question", JE.string record.question )
+                            , ( "answer", JE.string (Maybe.withDefault "" record.answer) )
+                            ]
+                        )
+
+                Scale record ->
+                    Just
+                        (JE.object
+                            [ ( "type", JE.string "Scale" )
+                            , ( "question", JE.string record.question )
+                            , ( "answer", JE.string (Maybe.withDefault "" record.answer) )
+                            ]
+                        )
+
+                FreeText record ->
+                    Just
+                        (JE.object
+                            [ ( "type", JE.string "FreeText" )
+                            , ( "question", JE.string record.question )
+                            , ( "answer", JE.string (Maybe.withDefault "" record.answer) )
+                            ]
+                        )
+        )
+        list
+        |> JE.list
 
 
 forwards : Catalogue -> Catalogue
@@ -148,6 +214,7 @@ forwards (Catalogue { previous, current, remaining }) =
             { previous = prev
             , current = Maybe.withDefault current (List.head remaining)
             , remaining = Maybe.withDefault [] (List.tail remaining)
+            , completed = False
             }
 
 
@@ -164,19 +231,50 @@ backwards (Catalogue { previous, current, remaining }) =
             { previous = Maybe.withDefault [] (List.tail previous)
             , current = Maybe.withDefault current (List.head previous)
             , remaining = remain
+            , completed = False
             }
 
 
-{-|
-    The view handles all the displying... thingy...
--}
+{-| -}
 view : Catalogue -> Html Msg
 view catalogue =
-    div []
-        [ questionView catalogue
-        , button [ onClick (Backwards catalogue) ] [ text "previous" ]
-        , button [ onClick (Forwards catalogue) ] [ text "next" ]
-        ]
+    case catalogue of
+        Catalogue record ->
+            case record.completed of
+                True ->
+                    div []
+                        [ text "Finished :-)" ]
+
+                False ->
+                    div []
+                        [ questionView catalogue
+                        , backwardsButton catalogue
+                        , forwardsButton catalogue
+                        ]
+
+
+forwardsButton : Catalogue -> Html Msg
+forwardsButton catalogue =
+    case catalogue of
+        Catalogue { remaining } ->
+            case remaining of
+                [] ->
+                    button [ onClick (Finish catalogue) ] [ text "Send" ]
+
+                _ ->
+                    button [ onClick (Forwards catalogue) ] [ text "next" ]
+
+
+backwardsButton : Catalogue -> Html Msg
+backwardsButton catalogue =
+    case catalogue of
+        Catalogue { previous } ->
+            case previous of
+                [] ->
+                    text ""
+
+                _ ->
+                    button [ onClick (Backwards catalogue) ] [ text "previous" ]
 
 
 questionView : Catalogue -> Html Msg
@@ -229,6 +327,12 @@ questionView catalogue =
                             (List.range lowest highest)
                             |> fieldset []
                         ]
+
+            TextBlock data ->
+                div []
+                    [ h3 [] [ text data.heading ]
+                    , p [] [ text data.text ]
+                    ]
 
 
 radioView : String -> String -> String -> msg -> Html msg
