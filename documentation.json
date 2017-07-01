@@ -1,7 +1,7 @@
 [
   {
     "name": "Sondage",
-    "comment": "\n# Sondage\n\n@docs Catalogue, Msg, Question, initCatalogue, update, view\n",
+    "comment": "\nSondage is a small module that helps building quesionnaires (Sondage in french).\n\nIt brings Types, functions and the whole view for displaying the questionnaire.\n\n\n## What does it do?\nLorem ipsum dolor sit amet\n\n\n## How to integrate it in the Elm-Architecture\nLorem ipsum dolor sit amet\n\n\n## Types\n@docs Catalogue, Msg, Question\n\n\n## Functions\n@docs initCatalogue, update, view, isCatalogueCompleted, resolveCatalogueAsJson\n",
     "aliases": [],
     "types": [
       {
@@ -53,6 +53,16 @@
         "name": "initCatalogue",
         "comment": " ",
         "type": "List Sondage.Question -> Sondage.Catalogue"
+      },
+      {
+        "name": "isCatalogueCompleted",
+        "comment": " ",
+        "type": "Sondage.Catalogue -> Bool"
+      },
+      {
+        "name": "resolveCatalogueAsJson",
+        "comment": " ",
+        "type": "Sondage.Catalogue -> Json.Encode.Value"
       },
       {
         "name": "update",

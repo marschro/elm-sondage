@@ -1,9 +1,3 @@
-{-
-   TODO: function that resolces with the catalogue as List
-   TODO: funtine that resolves with the catalogue as json
--}
-
-
 module Sondage
     exposing
         ( Catalogue
@@ -22,9 +16,25 @@ module Sondage
         )
 
 {-|
-# Sondage
+Sondage is a small module that helps building quesionnaires (Sondage in french).
 
-@docs Catalogue, Msg, Question, initCatalogue, update, view, isCatalogueCompleted, resolveCatalogueAsJson
+It brings Types, functions and the whole view for displaying the questionnaire.
+
+
+## What does it do?
+Lorem ipsum dolor sit amet
+
+
+## How to integrate it in the Elm-Architecture
+Lorem ipsum dolor sit amet
+
+
+## Types
+@docs Catalogue, Msg, Question
+
+
+## Functions
+@docs initCatalogue, update, view, isCatalogueCompleted, resolveCatalogueAsJson
 -}
 
 import Html exposing (..)
